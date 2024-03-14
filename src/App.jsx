@@ -9,13 +9,16 @@ import { getUrl, uploadData, remove } from "aws-amplify/storage";
 import {
   Button,
   Flex,
+  Grid,
   Heading,
   Image,
   Text,
   TextField,
+  TextAreaField,
   View,
   withAuthenticator,
 } from "@aws-amplify/ui-react";
+import { StorageManager } from "@aws-amplify/ui-react-storage";
 import { listNotes } from "./graphql/queries";
 import {
   createNote as createNoteMutation,
@@ -79,34 +82,44 @@ const App = ({ signOut }) => {
     <View className="App">
       <Heading level={1}>My Notes App</Heading>
       <View as="form" margin="3rem 0" onSubmit={createNote}>
-        <Flex direction="row" justifyContent="center">
+        <Flex
+          direction="column"
+          marginInline="auto"
+          justifyContent="space-between"
+          width="50%"
+        >
           <TextField
             name="name"
             placeholder="Note Name"
             label="Note Name"
             labelHidden
-            variation="quiet"
             required
           />
-          <TextField
+          <TextAreaField
             name="description"
             placeholder="Note Description"
             label="Note Description"
             labelHidden
-            variation="quiet"
             required
           />
           <View
             name="image"
             as="input"
             type="file"
-            style={{ alignSelf: "end" }}
+            style={{ alignSelf: "center" }}
           />
+          {/* <StorageManager
+            acceptedFileTypes={["image/*"]}
+            accessLevel="guest"
+            maxFileCount={1}
+            isResumable
+          /> */}
           <Button type="submit" variation="primary">
             Create Note
           </Button>
         </Flex>
       </View>
+
       <Heading level={2}>Current Notes</Heading>
       <View margin="3rem 0">
         {notes.map((note) => (

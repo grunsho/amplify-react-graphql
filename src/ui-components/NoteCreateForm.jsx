@@ -6,10 +6,23 @@
 
 /* eslint-disable */
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { fetchByPath, getOverrideProps, validateField } from "./utils";
+import {
+  Button,
+  Flex,
+  Grid,
+  TextAreaField,
+  TextField,
+} from "@aws-amplify/ui-react";
+import { StorageManager } from "@aws-amplify/ui-react-storage";
+import {
+  fetchByPath,
+  getOverrideProps,
+  processFile,
+  validateField,
+} from "./utils";
 import { generateClient } from "aws-amplify/api";
 import { createNote } from "../graphql/mutations";
+import { Field } from "@aws-amplify/ui-react/internal";
 const client = generateClient();
 export default function NoteCreateForm(props) {
   const {
@@ -25,7 +38,7 @@ export default function NoteCreateForm(props) {
   const initialValues = {
     name: "",
     description: "",
-    image: "",
+    image: undefined,
   };
   const [name, setName] = React.useState(initialValues.name);
   const [description, setDescription] = React.useState(
@@ -152,11 +165,18 @@ export default function NoteCreateForm(props) {
         hasError={errors.name?.hasError}
         {...getOverrideProps(overrides, "name")}
       ></TextField>
-      <TextField
-        label="Description"
+      <TextAreaField
+        label={
+          <span style={{ display: "inline-flex" }}>
+            <span>Description</span>
+            <span style={{ whiteSpace: "pre", fontStyle: "italic" }}>
+              {" "}
+              - optional
+            </span>
+          </span>
+        }
         isRequired={false}
         isReadOnly={false}
-        value={description}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
@@ -177,33 +197,78 @@ export default function NoteCreateForm(props) {
         errorMessage={errors.description?.errorMessage}
         hasError={errors.description?.hasError}
         {...getOverrideProps(overrides, "description")}
-      ></TextField>
-      <TextField
-        label="Image"
-        isRequired={false}
-        isReadOnly={false}
-        value={image}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              name,
-              description,
-              image: value,
-            };
-            const result = onChange(modelFields);
-            value = result?.image ?? value;
-          }
-          if (errors.image?.hasError) {
-            runValidationTasks("image", value);
-          }
-          setImage(value);
-        }}
-        onBlur={() => runValidationTasks("image", image)}
+      ></TextAreaField>
+      <Field
         errorMessage={errors.image?.errorMessage}
         hasError={errors.image?.hasError}
-        {...getOverrideProps(overrides, "image")}
-      ></TextField>
+        label={
+          <span style={{ display: "inline-flex" }}>
+            <span>Image</span>
+            <span style={{ whiteSpace: "pre", fontStyle: "italic" }}>
+              {" "}
+              - optional
+            </span>
+          </span>
+        }
+        label={
+          <span style={{ display: "inline-flex" }}>
+            <span>Image</span>
+            <span style={{ whiteSpace: "pre", fontStyle: "italic" }}>
+              {" "}
+              - optional
+            </span>
+          </span>
+        }
+        label={
+          <span style={{ display: "inline-flex" }}>
+            <span>Image</span>
+            <span style={{ whiteSpace: "pre", fontStyle: "italic" }}>
+              {" "}
+              - optional
+            </span>
+          </span>
+        }
+      >
+        <StorageManager
+          onUploadSuccess={({ key }) => {
+            setImage((prev) => {
+              let value = key;
+              if (onChange) {
+                const modelFields = {
+                  name,
+                  description,
+                  image: value,
+                };
+                const result = onChange(modelFields);
+                value = result?.image ?? value;
+              }
+              return value;
+            });
+          }}
+          onFileRemove={({ key }) => {
+            setImage((prev) => {
+              let value = initialValues?.image;
+              if (onChange) {
+                const modelFields = {
+                  name,
+                  description,
+                  image: value,
+                };
+                const result = onChange(modelFields);
+                value = result?.image ?? value;
+              }
+              return value;
+            });
+          }}
+          processFile={processFile}
+          accessLevel={"private"}
+          acceptedFileTypes={["image/*"]}
+          isResumable={false}
+          showThumbnails={true}
+          maxFileCount={1}
+          {...getOverrideProps(overrides, "image")}
+        ></StorageManager>
+      </Field>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}
